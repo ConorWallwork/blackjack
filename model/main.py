@@ -1,27 +1,23 @@
-from hand import Hand
 from deck import Deck
-from dealer import Dealer
+from round import Round
+from player_hand import PlayerHand
 from functions import *
-import numpy 
-from matplotlib import pyplot as plt
+import numpy
+from hand import Hand
 
 
 def main():
-    deck = Deck()
+    round = Round(100)
+    print(round.__dict__)
     # hand = Hand()
     
-    dealer = Dealer()
 
     # print(deck.__dict__, dealer.__dict__)
 
-    dealer.deal(deck.pop(2))
-    print(deck.__dict__)
-    print(dealer.__dict__)
-    return total(dealer.hand)
-    
+
 
 if __name__ == '__main__':
-    print(main())
+    main()
 
 
 
