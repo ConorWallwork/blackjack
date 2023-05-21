@@ -1,14 +1,16 @@
+from typing import Tuple
 import numpy
 class Deck(object):
 
     def __init__(self):
-        self.reset()
+        return
+    
+    @staticmethod
+    def new() -> list:
+        deck = numpy.arange(52)
+        numpy.random.shuffle(deck)
+        return deck.tolist()
 
-    def reset(self):
-        self.cards = numpy.arange(52)
-        numpy.random.shuffle(self.cards)
-
-    def pop(self, n: int) -> list:
-        cards, new_array = self.cards[0:n], self.cards[n:-1]
-        self.cards = new_array
-        return cards
+    @staticmethod
+    def pop(deck: list, n: int) -> Tuple[list, list]:
+        return deck[:n], deck[n:]

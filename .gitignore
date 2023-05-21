@@ -1,3 +1,2 @@
-/env
-/model/env
+/.venv
 /model/__pycache__

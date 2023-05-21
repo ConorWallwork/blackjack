@@ -1,4 +1,4 @@
-def total(hand):
+def total(hand: list):
     if len(hand) == 0: 
         return 0
     total = 0
