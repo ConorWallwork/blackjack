@@ -8,7 +8,7 @@ from session import Session
 def main():
     round = Round(100)
     print(round.__dict__)
-    round.deal_start()
+    round.start()
     print(round.__dict__, len(round.deck))
 
 
