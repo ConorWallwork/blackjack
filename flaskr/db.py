@@ -21,8 +21,11 @@ def get_db():
 
 
 def close_db(e=None):
-    db = g.pop('db')
-
+    db = None
+    try:
+        db = g.pop('db')
+    except KeyError as e:
+        pass
     if db is not None:
         db.close()
 

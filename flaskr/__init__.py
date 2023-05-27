@@ -11,7 +11,8 @@ def create_app(test_config=None):
         MYSQL_USER="ConorWallwork",
         MYSQL_PASSWORD="Conor123!",
         MYSQL_HOST="127.0.0.1",
-        MYSQL_DATABASE="blackjack"
+        MYSQL_DATABASE="blackjack",
+        STARTING_STACK=200
     )
 
     if test_config is None:
@@ -27,10 +28,14 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    # a simple page that says hello
+    from .controller import seat
+    app.register_blueprint(seat.bp, url_prefix="/seat")
+    
+        # a simple page that says hello
     @app.route('/hello')
     def hello():
         return 'Hello, World!'
+
 
     from . import db
     db.init_app(app)

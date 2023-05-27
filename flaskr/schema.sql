@@ -4,7 +4,7 @@ DROP TABLE IF EXISTS seat;
 CREATE TABLE seat (
     id VARCHAR(32) PRIMARY KEY,
     stack INTEGER NOT NULL,
-    username TEXT NOT NULL
+    nickname TEXT NOT NULL
 );
 
 CREATE TABLE round (

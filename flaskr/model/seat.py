@@ -3,12 +3,12 @@ from .functions import total
 import uuid
 
 
-class Session():
-    def __init__(self, starting_stack, username):
+class Seat():
+    def __init__(self, starting_stack, nickname):
         self.stack = starting_stack
-        self.session_id = get_new_session_id()
+        self.id = get_new_seat_id()
         self.round = None
-        self.username = username
+        self.nickname = nickname
 
     def round_start(self, bet):
         if (self.round and not (self.round.stage == "round_end")):
@@ -40,5 +40,5 @@ class Session():
         return self.round.dealer_hand[1:]
 
 
-def get_new_session_id():
+def get_new_seat_id():
     return uuid.uuid4().hex

@@ -2,7 +2,7 @@ from deck import Deck
 from round import Round
 from functions import *
 import numpy
-from session import Session
+from flaskr.model.seat import Seat
 
 
 def main():
