@@ -1,5 +1,6 @@
+import time
 from typing import Tuple
-import numpy
+import random
 class Deck(object):
 
     def __init__(self):
@@ -7,9 +8,9 @@ class Deck(object):
     
     @staticmethod
     def new() -> list:
-        deck = numpy.arange(52)
-        numpy.random.shuffle(deck)
-        return deck.tolist()
+        deck = [i for i in range(52)]
+        random.shuffle(deck)
+        return deck
 
     @staticmethod
     def pop(deck: list, n: int) -> Tuple[list, list]:

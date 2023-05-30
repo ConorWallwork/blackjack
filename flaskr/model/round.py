@@ -5,12 +5,13 @@ from .functions import total
 ## not make an action when it is not the correct stage for that action.
 ## Does not calculate or store winner/loser information
 class Round():
-    def __init__(self, bet):
-        self.player_hand = []
-        self.dealer_hand = []
-        self.deck = Deck.new()
-        self.stage = "pre_deal"
-        self.bet = bet
+    ## Create a round from scratch or with optional parameter
+    def __init__(self, bet, player_hand=[], dealer_hand=[], deck=None, stage="pre_deal"):
+        self.player_hand = player_hand
+        self.dealer_hand = dealer_hand
+        self.deck = deck if deck is not None else Deck.new()
+        self.stage = stage
+        self.bet = bet        
     
     def start(self):
         if(not (self.stage == "pre_deal")):

@@ -4,10 +4,10 @@ import uuid
 
 
 class Seat():
-    def __init__(self, starting_stack, nickname):
+    def __init__(self, starting_stack, nickname, round=None, id=None):
         self.stack = starting_stack
-        self.id = get_new_seat_id()
-        self.round = None
+        self.id = get_new_seat_id() if id is None else id
+        self.round = round
         self.nickname = nickname
 
     def round_start(self, bet):
@@ -38,6 +38,9 @@ class Seat():
         else:
             self.stack -= self.round.bet
         return self.round.dealer_hand[1:]
+
+    def set_round(self, round):
+        self.round = round
 
 
 def get_new_seat_id():
