@@ -6,12 +6,13 @@ from .functions import total
 ## Does not calculate or store winner/loser information
 class Round():
     ## Create a round from scratch or with optional parameter
-    def __init__(self, bet, player_hand=[], dealer_hand=[], deck=None, stage="pre_deal"):
+    def __init__(self, bet, player_hand=[], dealer_hand=[], deck=None, stage="pre_deal", id=None):
         self.player_hand = player_hand
         self.dealer_hand = dealer_hand
         self.deck = deck if deck is not None else Deck.new()
         self.stage = stage
-        self.bet = bet        
+        self.bet = bet
+        self.id = id  
     
     def start(self):
         if(not (self.stage == "pre_deal")):
@@ -28,7 +29,7 @@ class Round():
         new_card, self.deck = Deck.pop(self.deck, 1)
         self.player_hand = self.player_hand + new_card
         if(total(self.player_hand) > 21):
-            self.stage = "pre_deal"
+            self.stage = "round_end"
     
     def sit(self):
         if(not (self.stage == "player_turn")):
@@ -41,7 +42,7 @@ class Round():
         while(total(self.dealer_hand) < 17):
             new_card, self.deck = Deck.pop(self.deck, 1)
             self.dealer_hand = self.dealer_hand + new_card
-        self.stage = "pre_deal"
+        self.stage = "round_end"
             
 
         
