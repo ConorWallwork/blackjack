@@ -1,7 +1,15 @@
 import blackJackLogo from "./assets/black-jack.svg";
 import "./App.css";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 
 function App() {
+  const [newClicked, setNewClicked] = useState(false);
+
+  function handleNewClicked(clicked: boolean) {
+    setNewClicked(true);
+  }
+
   return (
     <>
       <div>
@@ -9,12 +17,17 @@ function App() {
           <img src={blackJackLogo} className="logo react" alt="React logo" />
         </a>
       </div>
-      <h1>Black Jack is here</h1>
-      <div className="card">
-        <p>
-          Coming soon: a light weight, scalabable, modern black jack solution
-          built on a serverless architecture
-        </p>
+      <div className="nav">
+        <div className="new-container">
+          <button
+            className="nav-button"
+            onClick={() => handleNewClicked(newClicked)}
+          >
+            {!newClicked ? "NEW" : <Link to={"seat/1"}>TAKE SEAT</Link>}
+          </button>
+          <input type="text" hidden={!newClicked}></input>
+        </div>
+        <button className="nav-button">LEADERBOARD</button>
       </div>
     </>
   );

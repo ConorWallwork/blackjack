@@ -11,12 +11,6 @@
   will-change: filter;
   transition: filter 300ms;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
 
 @keyframes logo-spin {
   from {
@@ -39,4 +33,23 @@
 
 .read-the-docs {
   color: #888;
+}
+
+.nav {
+  margin: 3em;
+  display: flex;
+  flex-direction: row;
+  gap: 1em;
+}
+
+.nav-button {
+  height: 45px;
+  width: 200px;
+  overflow-wrap: break-word;
+}
+
+.new-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
 }
