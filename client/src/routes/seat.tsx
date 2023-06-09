@@ -1,21 +1,21 @@
-export interface Seat {
+export type ISeat = {
   nickname: string;
   stack: number;
   id: string;
-  round?: Round;
-}
+  round?: IRound;
+};
 
-export interface Round {
+export type IRound = {
   id: number;
   player_hand?: number[];
   dealer_hand?: number[];
   deck: number[];
   stage: string;
   bet: number;
-}
+};
 
 export default function Seat() {
-  const seat: Seat = {
+  const seat: ISeat = {
     nickname: "Foo",
     stack: 200,
     id: "lqwejibf3452piqjwnef",
@@ -40,7 +40,7 @@ export default function Seat() {
   );
 }
 
-function Round({ seat }: { seat: Seat }) {
+function Round({ seat }: { seat: ISeat }) {
   const round = seat.round;
   return (
     <div>
