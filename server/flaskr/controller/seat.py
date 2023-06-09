@@ -26,10 +26,16 @@ def new():
     except Exception as e:
         abort(500, e)
     else:
-        return {
-            "id": seat.id,
-            "stack": seat.stack,
-        }
+        return seat.id
+
+@bp.route('<string:id>')
+def get(id):
+    seat = get_seat(id)
+
+    if seat is None:
+        abort(404, "seat with this ID does not exist")
+
+    return  { "nickname": seat.nickname, "id": seat.id, "stack": seat.stack }
 
 
 @bp.route('<string:id>/start', methods=["POST"])
