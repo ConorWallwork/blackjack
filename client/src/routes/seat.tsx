@@ -1,3 +1,5 @@
+import { useLoaderData } from "react-router-dom";
+
 export type ISeat = {
   nickname: string;
   stack: number;
@@ -15,17 +17,7 @@ export type IRound = {
 };
 
 export default function Seat() {
-  const seat: ISeat = {
-    nickname: "Foo",
-    stack: 200,
-    id: "lqwejibf3452piqjwnef",
-    round: {
-      id: 42,
-      deck: [0, 1, 2, 3],
-      stage: "pre_deal",
-      bet: 100,
-    },
-  };
+  const { seat } = useLoaderData() as { seat: ISeat };
 
   return (
     <div id="contact">

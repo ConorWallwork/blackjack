@@ -1,12 +1,7 @@
 import blackJackLogo from "../assets/black-jack.svg";
 import "./App.css";
 import { useState } from "react";
-import { Form, Link } from "react-router-dom";
-
-// export async function action(nickname: string) {
-//   const seat = await createSeat(nickname);
-//   return { seat };
-// }
+import { Form } from "react-router-dom";
 
 function App() {
   const [newClicked, setNewClicked] = useState(false);
@@ -32,7 +27,7 @@ function App() {
             <Form method="POST" id="new-seat-form">
               <div className="new-container">
                 <button type="submit" className="nav-button">
-                  <Link to={"seat/1"}>TAKE SEAT</Link>
+                  TAKE SEAT
                 </button>
                 <input
                   placeholder="Nickname"

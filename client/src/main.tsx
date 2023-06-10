@@ -5,16 +5,20 @@ import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import ErrorPage from "./error-page";
 import Seat from "./routes/seat.tsx";
+import { createSeatAction, getSeatLoader } from "./seats.ts";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App></App>,
     errorElement: <ErrorPage />,
+    action: createSeatAction,
   },
   {
     path: "seat/:seatId",
     element: <Seat />,
+    errorElement: <ErrorPage />,
+    loader: getSeatLoader,
   },
 ]);
 
