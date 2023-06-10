@@ -26,7 +26,7 @@ def new():
     except Exception as e:
         abort(500, e)
     else:
-        return seat.id
+        return { "id": seat.id }
 
 @bp.route('<string:id>')
 def get(id):
