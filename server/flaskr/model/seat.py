@@ -19,7 +19,7 @@ class Seat():
         self.round.start()
         return {
             "player_hand": self.round.player_hand,
-            "dealer_hand": self.round.dealer_hand[0]
+            "dealer_hand": [self.round.dealer_hand[0]]
         }
 
     def round_hit(self):

@@ -78,7 +78,7 @@ def hit(id):
             # The stack has changed, update seat in db
             update_seat(seat)
         update_round(seat.round)
-        return json.dumps(card)
+        return { "card": card }
     except Exception as e:
         abort(400, e)
 
@@ -117,7 +117,7 @@ def end(id):
         dealer_cards = seat.round_end()
         update_seat(seat)
         update_round(seat.round)
-        return dealer_cards
+        return {"dealer_cards": dealer_cards}
     except Exception as e:
         abort(400, e)
 
