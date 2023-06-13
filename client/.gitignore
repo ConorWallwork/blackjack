@@ -25,4 +25,4 @@ dist-ssr
 
 # Environments
 
-src/environments
+src/environments/*.prod.ts

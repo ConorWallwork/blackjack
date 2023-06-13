@@ -5,7 +5,7 @@ import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import ErrorPage from "./error-page";
 import Seat from "./routes/seat.tsx";
-import { createSeatAction, getSeatLoader } from "./seats.ts";
+import { createSeatAction, getSeatLoader } from "./services/seats.ts";
 
 const router = createBrowserRouter([
   {
