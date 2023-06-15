@@ -1,0 +1,27 @@
+.playing-card {
+  height: 56mm;
+  width: 40mm;
+  border: solid;
+  border-radius: 8%;
+  border-width: 2px;
+  border-color: black;
+  background-color: white;
+  position: relative;
+}
+
+.top-left {
+  position: absolute;
+  top: 5px;
+  left: 10px;
+}
+
+.bottom-right {
+  position: absolute;
+  bottom: 5px;
+  right: 10px;
+  transform: rotate(180deg);
+}
+
+.suit {
+  font-size: large;
+}

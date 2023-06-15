@@ -1,0 +1,61 @@
+.table {
+  display: grid;
+  grid-template-rows: repeat(4, 1fr);
+  grid-template-columns: repeat(4, 1fr);
+  height: 100%;
+  width: 100%;
+}
+
+.dealer-side {
+  grid-column: 1 / 5;
+  grid-row: 1;
+  background-color: rgb(165, 108, 66);
+}
+
+.dealer-felt {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 1fr;
+  grid-column: 1 / 5;
+  grid-row: 2;
+  background-color: #45a445;
+}
+
+.player-felt {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 1fr;
+  grid-column: 1 / 5;
+  grid-row: 3;
+  background-color: #45a445;
+}
+
+.player-cards-outer {
+  grid-column: 2;
+  position: relative;
+}
+
+.player-cards-inner {
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+}
+
+.dealer-cards {
+  grid-column: 2;
+  position: relative;
+}
+
+.player-side {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: 1fr;
+  grid-column: 1 / 5;
+  grid-row: 4;
+  background-color: rgb(165, 108, 66);
+}
+
+.seat-info {
+  background-color: white;
+}

@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { useLoaderData, useNavigation } from "react-router-dom";
+import { useLoaderData } from "react-router-dom";
 import { endSeat, hitSeat, sitSeat, startSeat } from "../services/seats";
-import { total } from "../functions/total";
+import { getSuit, getValue, total } from "../functions/total";
+import "./seat.css";
+import Card from "../components/card";
 
 export enum Stages {
   PreBet = "pre_bet",
@@ -29,21 +31,41 @@ export default function Seat() {
   const { seat } = useLoaderData() as { seat: ISeat };
   const [stack, setStack] = useState<number>(seat.stack);
   seat.stack = stack;
-  const navigation = useNavigation();
   const [playerHand, setPlayerHand] = useState<number[]>([]);
   const [dealerHand, setDealerHand] = useState<number[]>([]);
   const [stage, setStage] = useState("pre_bet");
   const [bet, setBet] = useState<number>(0);
   const [result, setResult] = useState<string | null>(null);
-  const seatWithRound = {
-    ...seat,
-    round: {
-      playerHand,
-      dealerHand,
-      stage,
-      bet,
-    },
-  };
+
+  const playerHandView = playerHand.map((card, index) => {
+    const cardValue = getValue(card);
+    const cardSuit = getSuit(card);
+    return (
+      <div
+        className="card-wrapper"
+        style={{ position: "absolute", left: `${0 + index * 30}px` }}
+      >
+        <Card value={cardValue} suit={cardSuit}></Card>
+      </div>
+    );
+  });
+
+  const dealerHandView = dealerHand.map((card, index) => {
+    const cardValue = getValue(card);
+    const cardSuit = getSuit(card);
+    return (
+      <div
+        className="card-wrapper"
+        style={{
+          position: "absolute",
+          left: `${0 + index * 30}px`,
+          bottom: "0px",
+        }}
+      >
+        <Card value={cardValue} suit={cardSuit}></Card>
+      </div>
+    );
+  });
 
   function handlePlaceBet(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -134,34 +156,25 @@ export default function Seat() {
 
   return (
     <>
-      {navigation.state === "loading" || navigation.state === "submitting" ? (
-        <div>FOO</div>
-      ) : (
-        <div id="contact">
-          <div>
-            <h1>{seat.nickname} </h1>
-            <h2>{seat.stack}</h2>
-            <h2>{seat.id}</h2>
-            {result && <h2>{result}</h2>}
-
-            {renderActionButton(stage)}
-
-            <Round seat={seatWithRound}></Round>
+      <div className="table">
+        <div className="dealer-side"></div>
+        <div className="dealer-felt">
+          <div className="dealer-cards">{dealerHandView}</div>
+        </div>
+        <div className="player-felt">
+          <div className="player-cards-outer">
+            <div className="player-cards-inner">{playerHandView}</div>
           </div>
         </div>
-      )}
+        <div className="player-side">
+          <div className="seat-info">
+            <h2>{seat.nickname}</h2>
+            <h2>{seat.stack}</h2>
+            {renderActionButton(stage)}
+          </div>
+        </div>
+      </div>
     </>
-  );
-}
-
-function Round({ seat }: { seat: ISeat }) {
-  const round = seat.round;
-  return (
-    <div>
-      STAGE: {round?.stage}, BET: {round?.bet}, DEALER HAND:
-      {round?.dealerHand?.toString()}, PLAYER HAND:{" "}
-      {round?.playerHand?.toString()}
-    </div>
   );
 }
 
