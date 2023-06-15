@@ -35,7 +35,8 @@ export default function Seat() {
   const [dealerHand, setDealerHand] = useState<number[]>([]);
   const [stage, setStage] = useState("pre_bet");
   const [bet, setBet] = useState<number>(0);
-  const [result, setResult] = useState<string | null>(null);
+  const [_result, setResult] = useState<string | null>(null);
+  _result;
 
   const playerHandView = playerHand.map((card, index) => {
     const cardValue = getValue(card);
