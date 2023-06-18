@@ -17,7 +17,7 @@ class Round():
     def start(self):
         if(not (self.stage == "pre_deal")):
             raise Exception("The first cards have already been dealt")
-        dealer_cards, self.deck = Deck.pop(self.deck, 2)
+        dealer_cards, self.deck = Deck.pop(self.deck, 1)
         self.dealer_hand = self.dealer_hand + dealer_cards
         player_cards, self.deck = Deck.pop(self.deck, 2)
         self.player_hand = self.player_hand + player_cards

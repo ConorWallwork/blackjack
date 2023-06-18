@@ -31,11 +31,19 @@ def new():
 @bp.route('<string:id>')
 def get(id):
     seat = get_seat(id)
-
     if seat is None:
         abort(404, "seat with this ID does not exist")
 
-    return  { "nickname": seat.nickname, "id": seat.id, "stack": seat.stack }
+    active_round = get_active_round(seat)
+
+
+    return  { "nickname": seat.nickname, "id": seat.id, "stack": seat.stack, 
+             "round": None if active_round is None else {
+                        "player_hand": active_round.player_hand, "dealer_hand": active_round.dealer_hand, 
+                        "stage": active_round.stage, "bet": active_round.bet
+                      } 
+             
+            }
 
 
 @bp.route('<string:id>/start', methods=["POST"])
