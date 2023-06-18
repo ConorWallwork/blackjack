@@ -35,8 +35,16 @@ export async function sitSeat(id: string): Promise<void> {
 export async function getSeat(id: string): Promise<ISeat> {
   const url = `${serverBaseUrl}/seat/${id}`;
   const response = await fetch(url, { method: "GET" });
-  const seat = await response.json();
-  return seat;
+  const seatDTO = await response.json();
+
+  return {
+    ...seatDTO,
+    round: {
+      ...seatDTO.round,
+      playerHand: seatDTO.round?.player_hand,
+      dealerHand: seatDTO.round?.dealer_hand,
+    },
+  };
 }
 
 export async function endSeat(id: string): Promise<number[]> {
@@ -56,7 +64,7 @@ export async function createSeatAction(event: {
   return redirect(`seat/${id}`);
 }
 
-export async function getSeatLoader(event: { params: any }) {
+export async function getSeatLoader(event: { params: { seatId: string } }) {
   const seat = await getSeat(event.params.seatId);
   return { seat };
 }

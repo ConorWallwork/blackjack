@@ -11,9 +11,9 @@ export function total(hand: number[]) {
     } else {
       total += 10;
     }
-    if (total < 12 && hasAce) {
-      total += 10;
-    }
+  }
+  if (total < 12 && hasAce) {
+    total += 10;
   }
   return total;
 }

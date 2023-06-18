@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { useLoaderData } from "react-router-dom";
+import { useLoaderData, useNavigate } from "react-router-dom";
 import { endSeat, hitSeat, sitSeat, startSeat } from "../services/seats";
 import { getSuit, getValue, total } from "../functions/total";
 import "./seat.css";
 import Card from "../components/card";
+import { MdExitToApp } from "@react-icons/all-files/md/MdExitToApp";
+import Deck from "../components/deck";
 
 export enum Stages {
   PreBet = "pre_bet",
@@ -23,18 +25,24 @@ export type ISeat = {
 export type IRound = {
   playerHand?: number[];
   dealerHand?: number[];
-  stage: string;
+  stage: Stages;
   bet: number | null;
 };
 
 export default function Seat() {
+  /** Get the value of seat on page load and initialise the state
+   * with those values
+   */
   const { seat } = useLoaderData() as { seat: ISeat };
   const [stack, setStack] = useState<number>(seat.stack);
-  seat.stack = stack;
-  const [playerHand, setPlayerHand] = useState<number[]>([]);
-  const [dealerHand, setDealerHand] = useState<number[]>([]);
-  const [stage, setStage] = useState("pre_bet");
-  const [bet, setBet] = useState<number>(0);
+  const [playerHand, setPlayerHand] = useState<number[]>(
+    seat.round?.playerHand ?? []
+  );
+  const [dealerHand, setDealerHand] = useState<number[]>(
+    seat.round?.dealerHand ?? []
+  );
+  const [stage, setStage] = useState(seat.round?.stage ?? Stages.PreBet);
+  const [bet, setBet] = useState<number>(seat.round?.bet ?? 0);
   const [_result, setResult] = useState<string | null>(null);
   _result;
 
@@ -68,7 +76,7 @@ export default function Seat() {
     );
   });
 
-  function handlePlaceBet(e: React.FormEvent<HTMLFormElement>) {
+  async function handlePlaceBet(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const target = e.target as typeof e.target & {
       bet: { value: string };
@@ -78,14 +86,14 @@ export default function Seat() {
 
     setBet(bet);
     setStage(Stages.PreDeal);
-  }
-
-  async function handleDeal(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-
     const startingHands = await startSeat(bet, seat.id);
     setPlayerHand(startingHands.playerHand);
     setDealerHand(startingHands.dealerHand);
+  }
+
+  function handleDeal(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
     setStage(Stages.PlayerTurn);
   }
 
@@ -155,23 +163,43 @@ export default function Seat() {
     }
   }
 
+  const navigate = useNavigate();
+
   return (
     <>
       <div className="table">
-        <div className="dealer-side"></div>
+        <div className="dealer-side">
+          <div className="deck-container">
+            <Deck></Deck>
+          </div>
+        </div>
         <div className="dealer-felt">
-          <div className="dealer-cards">{dealerHandView}</div>
+          <div className="dealer-cards">
+            {[Stages.PreBet, Stages.PreDeal].includes(stage)
+              ? ""
+              : dealerHandView}
+          </div>
         </div>
         <div className="player-felt">
           <div className="player-cards-outer">
-            <div className="player-cards-inner">{playerHandView}</div>
+            <div className="player-cards-inner">
+              {[Stages.PreBet, Stages.PreDeal].includes(stage)
+                ? ""
+                : playerHandView}
+            </div>
           </div>
         </div>
         <div className="player-side">
           <div className="seat-info">
+            <div className="exit-container">
+              <MdExitToApp
+                onClick={() => navigate("/")}
+                className="exit-button"
+              ></MdExitToApp>
+            </div>
             <h2>{seat.nickname}</h2>
-            <h2>{seat.stack}</h2>
-            {renderActionButton(stage)}
+            <h2>{stack}</h2>
+            {stack === 0 ? <></> : renderActionButton(stage)}
           </div>
         </div>
       </div>
@@ -210,12 +238,14 @@ function PlayerTurnButtons(args: {
 }) {
   return (
     <>
-      <form method="post" onSubmit={args.handleHit}>
-        <button type="submit">HIT</button>
-      </form>
-      <form method="post" onSubmit={args.handleSit}>
-        <button type="submit">SIT</button>
-      </form>
+      <div className="player-turn-buttons-container">
+        <form method="post" onSubmit={args.handleHit}>
+          <button type="submit">HIT</button>
+        </form>
+        <form method="post" onSubmit={args.handleSit}>
+          <button type="submit">SIT</button>
+        </form>
+      </div>
     </>
   );
 }

@@ -1,10 +1,20 @@
-import { CircleLoader } from "react-spinners";
+import { BarLoader } from "react-spinners";
 import blackJackLogo from "../assets/black-jack.svg";
 import "./App.css";
 import { useState } from "react";
 import { Form, useNavigation } from "react-router-dom";
+import { TextField } from "@mui/material";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 function App() {
+  const theme = createTheme({
+    palette: {
+      primary: {
+        main: "#45a445",
+      },
+    },
+  });
+
   const [newClicked, setNewClicked] = useState(false);
   const navigation = useNavigation();
 
@@ -13,10 +23,8 @@ function App() {
   }
 
   return (
-    <>
-      {navigation.state === "loading" || navigation.state === "submitting" ? (
-        <CircleLoader size={100} color={"#45a445"}></CircleLoader>
-      ) : (
+    <ThemeProvider theme={theme}>
+      <>
         <div>
           <div>
             <a href="https://react.dev" target="_blank">
@@ -27,30 +35,43 @@ function App() {
               />
             </a>
           </div>
-          <div className="nav">
-            {!newClicked ? (
-              <button className="nav-button" onClick={() => handleNewClicked()}>
-                NEW
-              </button>
-            ) : (
-              <Form method="POST" id="new-seat-form">
-                <div className="new-container">
-                  <button type="submit" className="nav-button">
-                    TAKE SEAT
-                  </button>
-                  <input
-                    placeholder="Nickname"
-                    type="text"
-                    name="nickname"
-                  ></input>
-                </div>
-              </Form>
-            )}
-            <button className="nav-button">LEADERBOARD</button>
-          </div>
+          {navigation.state === "loading" ||
+          navigation.state === "submitting" ? (
+            <BarLoader color={"#45a445"} width={360}></BarLoader>
+          ) : (
+            <div className="nav">
+              {!newClicked ? (
+                <button
+                  className="nav-button"
+                  onClick={() => handleNewClicked()}
+                >
+                  NEW
+                </button>
+              ) : (
+                <Form method="POST" id="new-seat-form">
+                  <div className="new-container">
+                    <button type="submit" className="nav-button">
+                      TAKE SEAT
+                    </button>
+
+                    <TextField
+                      className="nav-button"
+                      color="primary"
+                      name="nickname"
+                      required
+                      id="nickname"
+                      label="Nickname"
+                      defaultValue=""
+                    />
+                  </div>
+                </Form>
+              )}
+              <button className="nav-button">LEADERBOARD</button>
+            </div>
+          )}
         </div>
-      )}
-    </>
+      </>
+    </ThemeProvider>
   );
 }
 

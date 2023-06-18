@@ -10,6 +10,15 @@
   grid-column: 1 / 5;
   grid-row: 1;
   background-color: rgb(165, 108, 66);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.deck-container {
+  grid-column: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .dealer-felt {
@@ -58,4 +67,20 @@
 
 .seat-info {
   background-color: white;
+  padding: 1.5em;
+}
+
+.exit-container {
+  text-align: left;
+}
+
+.exit-button {
+  cursor: pointer;
+  font-size: x-large;
+}
+
+.player-turn-buttons-container {
+  display: flex;
+  justify-content: center;
+  gap: 1em;
 }

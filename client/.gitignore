@@ -24,5 +24,3 @@ dist-ssr
 *.sw?
 
 # Environments
-
-src/environments/*.prod.ts

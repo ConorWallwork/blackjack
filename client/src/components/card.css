@@ -3,10 +3,16 @@
   width: 40mm;
   border: solid;
   border-radius: 8%;
-  border-width: 2px;
+  border-width: 1px;
   border-color: black;
   background-color: white;
   position: relative;
+}
+
+.face-down-card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .top-left {
