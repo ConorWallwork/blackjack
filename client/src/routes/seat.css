@@ -84,3 +84,9 @@
   justify-content: center;
   gap: 1em;
 }
+
+.action-button {
+  height: 45px;
+  width: 200px;
+  overflow-wrap: break-word;
+}

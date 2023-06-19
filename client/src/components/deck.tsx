@@ -11,10 +11,8 @@ function Deck() {
   const deck = [];
 
   for (let index = 0; index < numCards; index++) {
-    console.error(index);
     deck.push(
       <div
-        key={index}
         className="card-wrapper"
         style={{
           position: "absolute",

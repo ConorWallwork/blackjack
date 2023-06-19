@@ -35,8 +35,9 @@ class Seat():
         self.round.end()
         if (total(self.round.player_hand) > total(self.round.dealer_hand) or total(self.round.dealer_hand) > 21):
             self.stack += self.round.bet
-        else:
+        elif (total(self.round.player_hand) < total(self.round.dealer_hand)):
             self.stack -= self.round.bet
+        ## otherwise draw, stack does not change            
         return self.round.dealer_hand[1:]
 
     def set_round(self, round):

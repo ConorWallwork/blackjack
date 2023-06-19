@@ -6,6 +6,7 @@ import "./seat.css";
 import Card from "../components/card";
 import { MdExitToApp } from "@react-icons/all-files/md/MdExitToApp";
 import Deck from "../components/deck";
+import { TextField, ThemeProvider, createTheme } from "@mui/material";
 
 export enum Stages {
   PreBet = "pre_bet",
@@ -125,9 +126,12 @@ export default function Seat() {
     if (dealerTotal > 21 || playerTotal > dealerTotal) {
       setStack(stack + bet);
       setResult("WIN");
-    } else {
+    } else if (dealerTotal > playerTotal) {
       setStack(stack - bet);
       setResult("LOSS");
+    } else {
+      // draw, stack doesn't change
+      setResult("DRAW");
     }
     setStage(Stages.RoundEnd);
   }
@@ -145,7 +149,10 @@ export default function Seat() {
     switch (stage) {
       case Stages.PreBet:
         return (
-          <PlaceBetButton handlePlaceBet={handlePlaceBet}></PlaceBetButton>
+          <PlaceBetButton
+            handlePlaceBet={handlePlaceBet}
+            stack={stack}
+          ></PlaceBetButton>
         );
       case Stages.PreDeal:
         return <DealButton handleDeal={handleDeal}></DealButton>;
@@ -165,56 +172,76 @@ export default function Seat() {
 
   const navigate = useNavigate();
 
+  const theme = createTheme({
+    palette: {
+      primary: {
+        main: "#45a445",
+      },
+    },
+  });
+
   return (
     <>
-      <div className="table">
-        <div className="dealer-side">
-          <div className="deck-container">
-            <Deck></Deck>
+      <ThemeProvider theme={theme}>
+        <div className="table">
+          <div className="dealer-side">
+            <div className="deck-container">
+              <Deck></Deck>
+            </div>
           </div>
-        </div>
-        <div className="dealer-felt">
-          <div className="dealer-cards">
-            {[Stages.PreBet, Stages.PreDeal].includes(stage)
-              ? ""
-              : dealerHandView}
-          </div>
-        </div>
-        <div className="player-felt">
-          <div className="player-cards-outer">
-            <div className="player-cards-inner">
+          <div className="dealer-felt">
+            <div className="dealer-cards">
               {[Stages.PreBet, Stages.PreDeal].includes(stage)
                 ? ""
-                : playerHandView}
+                : dealerHandView}
+            </div>
+          </div>
+          <div className="player-felt">
+            <div className="player-cards-outer">
+              <div className="player-cards-inner">
+                {[Stages.PreBet, Stages.PreDeal].includes(stage)
+                  ? ""
+                  : playerHandView}
+              </div>
+            </div>
+          </div>
+          <div className="player-side">
+            <div className="seat-info">
+              <div className="exit-container">
+                <MdExitToApp
+                  onClick={() => navigate("/")}
+                  className="exit-button"
+                ></MdExitToApp>
+              </div>
+              <h2>{seat.nickname}</h2>
+              <h2>{stack}</h2>
+              {stack === 0 ? <></> : renderActionButton(stage)}
             </div>
           </div>
         </div>
-        <div className="player-side">
-          <div className="seat-info">
-            <div className="exit-container">
-              <MdExitToApp
-                onClick={() => navigate("/")}
-                className="exit-button"
-              ></MdExitToApp>
-            </div>
-            <h2>{seat.nickname}</h2>
-            <h2>{stack}</h2>
-            {stack === 0 ? <></> : renderActionButton(stage)}
-          </div>
-        </div>
-      </div>
+      </ThemeProvider>
     </>
   );
 }
 
 function PlaceBetButton(args: {
   handlePlaceBet: React.FormEventHandler<HTMLFormElement>;
+  stack: number;
 }) {
   return (
     <>
       <form method="post" onSubmit={args.handlePlaceBet}>
-        <input name="bet" type="number" defaultValue={0}></input>
-        <button type="submit">PLACE BET</button>
+        <TextField
+          className="action-button"
+          name="bet"
+          type="number"
+          defaultValue={0}
+          color={"primary"}
+          inputProps={{ min: 0, max: args.stack }}
+        ></TextField>
+        <button type="submit" className="action-button">
+          PLACE BET
+        </button>
       </form>
     </>
   );
@@ -226,7 +253,9 @@ function DealButton(args: {
   return (
     <>
       <form method="post" onSubmit={args.handleDeal}>
-        <button type="submit">DEAL</button>
+        <button type="submit" className="action-button">
+          DEAL
+        </button>
       </form>
     </>
   );
@@ -240,10 +269,14 @@ function PlayerTurnButtons(args: {
     <>
       <div className="player-turn-buttons-container">
         <form method="post" onSubmit={args.handleHit}>
-          <button type="submit">HIT</button>
+          <button type="submit" className="action-button">
+            HIT
+          </button>
         </form>
         <form method="post" onSubmit={args.handleSit}>
-          <button type="submit">SIT</button>
+          <button type="submit" className="action-button">
+            SIT
+          </button>
         </form>
       </div>
     </>
@@ -256,7 +289,9 @@ function DealerTurnButton(args: {
   return (
     <>
       <form method="post" onSubmit={args.handleEnd}>
-        <button type="submit">FINISH</button>
+        <button type="submit" className="action-button">
+          FINISH
+        </button>
       </form>
     </>
   );
@@ -268,7 +303,9 @@ function NewRoundButton(args: {
   return (
     <>
       <form method="post" onSubmit={args.handleNew}>
-        <button type="submit">NEW ROUND</button>
+        <button type="submit" className="action-button">
+          NEW ROUND
+        </button>
       </form>
     </>
   );
