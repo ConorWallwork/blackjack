@@ -2,7 +2,7 @@ import { BarLoader } from "react-spinners";
 import blackJackLogo from "../assets/black-jack.svg";
 import "./App.css";
 import { useState } from "react";
-import { Form, redirect, useNavigate, useNavigation } from "react-router-dom";
+import { Form, useNavigate, useNavigation } from "react-router-dom";
 import { TextField } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 

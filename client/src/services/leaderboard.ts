@@ -6,7 +6,7 @@ export async function getLeaderboard(): Promise<ILeaderboardSeat[]> {
   const response = await fetch(url, { method: "GET" });
   return await response.json();
 }
-export async function getLeaderboardLoader(event: any) {
+export async function getLeaderboardLoader() {
   const leaderboard = await getLeaderboard();
   return { leaderboard };
 }
