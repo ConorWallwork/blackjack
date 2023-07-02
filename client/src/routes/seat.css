@@ -9,7 +9,7 @@
 .dealer-side {
   grid-column: 1 / 5;
   grid-row: 1;
-  background-color: rgb(165, 108, 66);
+  background-color: #45a445;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
 }
@@ -39,6 +39,10 @@
   background-color: #45a445;
 }
 
+.bet-outer {
+  grid-column: 1;
+}
+
 .player-cards-outer {
   grid-column: 2;
   position: relative;
@@ -65,28 +69,117 @@
   background-color: rgb(165, 108, 66);
 }
 
+.seat-actions-section {
+  display: flex;
+  flex-direction: row;
+}
+
 .seat-info {
-  background-color: white;
-  padding: 1.5em;
+  width: 180px;
+  background-color: blue;
+  color: white;
+  border: solid;
+  border-radius: 4px;
+  border-color: gold;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 2fr;
+}
+
+.meta-data-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .exit-container {
-  text-align: left;
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+  justify-content: start;
 }
 
-.exit-button {
+.seat-info-header {
+  padding-left: 1em;
+  padding-top: 1em;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: start;
+  gap: 1em;
+}
+
+.seat-info-header-buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  align-items: start;
+  gap: 1em;
+}
+
+.nickname-container {
+  font-weight: bold;
+}
+
+.header-button {
   cursor: pointer;
   font-size: x-large;
 }
 
 .player-turn-buttons-container {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   gap: 1em;
 }
 
+.action-buttons-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
 .action-button {
-  height: 45px;
-  width: 200px;
+  height: 60px;
+  width: 120px;
   overflow-wrap: break-word;
+}
+
+.bet-form-container {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.bet-text-field {
+  color: white;
+}
+
+.stack-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.stack-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 70px);
+  grid-template-rows: repeat(3, 70px);
+}
+
+.clickable-chips {
+  background-color: grey;
+  padding: 15px;
+  display: grid;
+  grid-template-columns: repeat(3, 70px);
+  grid-template-rows: repeat(3, 70px);
+}
+
+.chip-stack-wrapper {
+  position: relative;
 }

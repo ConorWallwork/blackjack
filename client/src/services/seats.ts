@@ -64,7 +64,7 @@ export async function createSeatAction(event: {
   return redirect(`seat/${id}`);
 }
 
-export async function getSeatLoader(event: { params: { seatId: string } }) {
+export async function getSeatLoader(event: any) {
   const seat = await getSeat(event.params.seatId);
   return { seat };
 }

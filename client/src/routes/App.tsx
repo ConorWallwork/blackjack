@@ -2,7 +2,7 @@ import { BarLoader } from "react-spinners";
 import blackJackLogo from "../assets/black-jack.svg";
 import "./App.css";
 import { useState } from "react";
-import { Form, useNavigation } from "react-router-dom";
+import { Form, redirect, useNavigate, useNavigation } from "react-router-dom";
 import { TextField } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
@@ -17,6 +17,7 @@ function App() {
 
   const [newClicked, setNewClicked] = useState(false);
   const navigation = useNavigation();
+  const navigator = useNavigate();
 
   function handleNewClicked() {
     setNewClicked(true);
@@ -25,7 +26,7 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <>
-        <div>
+        <div className="landing-page">
           <div>
             <a href="https://react.dev" target="_blank">
               <img
@@ -66,7 +67,14 @@ function App() {
                   </div>
                 </Form>
               )}
-              <button className="nav-button">LEADERBOARD</button>
+              <button
+                className="nav-button"
+                onClick={() => {
+                  navigator("leaderboard");
+                }}
+              >
+                LEADERBOARD
+              </button>
             </div>
           )}
         </div>

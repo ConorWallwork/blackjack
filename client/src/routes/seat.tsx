@@ -5,8 +5,12 @@ import { getSuit, getValue, total } from "../functions/total";
 import "./seat.css";
 import Card from "../components/card";
 import { MdExitToApp } from "@react-icons/all-files/md/MdExitToApp";
+import { MdInfoOutline } from "@react-icons/all-files/md/MdInfoOutline";
 import Deck from "../components/deck";
 import { TextField, ThemeProvider, createTheme } from "@mui/material";
+import { chips } from "../functions/chips";
+import Chip from "../components/chip";
+import InfoDialog from "../components/info-dialog";
 
 export enum Stages {
   PreBet = "pre_bet",
@@ -30,7 +34,22 @@ export type IRound = {
   bet: number | null;
 };
 
+export type ChipValue = 5 | 10 | 50 | 100 | 500 | 1000 | 5000 | 10000;
+
+export const ChipColorMap: Record<ChipValue, string> = {
+  5: "red",
+  10: "orange",
+  50: "blue",
+  100: "green",
+  500: "yellow",
+  1000: "purple",
+  5000: "gold",
+  10000: "cyan",
+};
+
 export default function Seat() {
+  const navigate = useNavigate();
+
   /** Get the value of seat on page load and initialise the state
    * with those values
    */
@@ -46,6 +65,20 @@ export default function Seat() {
   const [bet, setBet] = useState<number>(seat.round?.bet ?? 0);
   const [_result, setResult] = useState<string | null>(null);
   _result;
+  const [infoDialogOpen, setInfoDialogOpen] = useState(false);
+
+  const handleClickInfo = () => {
+    setInfoDialogOpen(true);
+  };
+
+  const handleCloseInfo = () => {
+    setInfoDialogOpen(false);
+  };
+
+  const handleClickChip = (chipValue: ChipValue) => {
+    setBet(bet + chipValue);
+    setStack(stack - chipValue);
+  };
 
   const playerHandView = playerHand.map((card, index) => {
     const cardValue = getValue(card);
@@ -77,15 +110,74 @@ export default function Seat() {
     );
   });
 
+  const stackChipCounts = chips(stack);
+
+  const stackView = Object.keys(stackChipCounts).map((chipValue) => {
+    const chipList = [];
+    const numChips = stackChipCounts[
+      parseInt(chipValue) as ChipValue
+    ] as number;
+    for (let index = 0; index < numChips; index++) {
+      chipList.push(
+        <div
+          className="chip-wrapper"
+          style={{
+            position: "absolute",
+            left: `${0 + index * 2}px`,
+            top: "0px",
+          }}
+        >
+          <Chip value={parseInt(chipValue) as ChipValue}></Chip>
+        </div>
+      );
+    }
+    return <div className="chip-stack-wrapper">{chipList}</div>;
+  });
+
+  const betChipCounts = chips(bet);
+
+  const betView = Object.keys(betChipCounts).map((chipValue) => {
+    const chipList = [];
+    const numChips = betChipCounts[parseInt(chipValue) as ChipValue] as number;
+    for (let index = 0; index < numChips; index++) {
+      chipList.push(
+        <div
+          className="chip-wrapper"
+          style={{
+            position: "absolute",
+            left: `${0 + index * 2}px`,
+            top: "0px",
+          }}
+        >
+          <Chip value={parseInt(chipValue) as ChipValue}></Chip>
+        </div>
+      );
+    }
+    return <div className="chip-stack-wrapper">{chipList}</div>;
+  });
+
+  const clickableChipsView = Object.keys(ChipColorMap).map((chipValue) => {
+    const intValue = parseInt(chipValue);
+    return (
+      <div
+        className="clickable-chip"
+        style={{
+          visibility: intValue <= stack ? "visible" : "hidden",
+        }}
+      >
+        <Chip
+          value={intValue as ChipValue}
+          clickable={true}
+          onClick={() => {
+            handleClickChip(intValue as ChipValue);
+          }}
+        ></Chip>
+      </div>
+    );
+  });
+
   async function handlePlaceBet(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const target = e.target as typeof e.target & {
-      bet: { value: string };
-    };
-
-    const bet = parseInt(target.bet.value);
-
-    setBet(bet);
     setStage(Stages.PreDeal);
     const startingHands = await startSeat(bet, seat.id);
     setPlayerHand(startingHands.playerHand);
@@ -105,7 +197,7 @@ export default function Seat() {
     setPlayerHand(newPlayerHand);
     if (total(newPlayerHand) > 21) {
       setStage(Stages.RoundEnd);
-      setStack(stack - bet);
+      setBet(0);
     }
   }
 
@@ -124,10 +216,11 @@ export default function Seat() {
     const dealerTotal = total(newDealerHand);
 
     if (dealerTotal > 21 || playerTotal > dealerTotal) {
-      setStack(stack + bet);
+      setStack(stack + 2 * bet);
+      setBet(0);
       setResult("WIN");
     } else if (dealerTotal > playerTotal) {
-      setStack(stack - bet);
+      setBet(0);
       setResult("LOSS");
     } else {
       // draw, stack doesn't change
@@ -151,7 +244,7 @@ export default function Seat() {
         return (
           <PlaceBetButton
             handlePlaceBet={handlePlaceBet}
-            stack={stack}
+            bet={bet}
           ></PlaceBetButton>
         );
       case Stages.PreDeal:
@@ -169,8 +262,6 @@ export default function Seat() {
         return <NewRoundButton handleNew={handleNew}></NewRoundButton>;
     }
   }
-
-  const navigate = useNavigate();
 
   const theme = createTheme({
     palette: {
@@ -197,6 +288,9 @@ export default function Seat() {
             </div>
           </div>
           <div className="player-felt">
+            <div className="bet-outer">
+              <div className="stack-grid">{betView}</div>
+            </div>
             <div className="player-cards-outer">
               <div className="player-cards-inner">
                 {[Stages.PreBet, Stages.PreDeal].includes(stage)
@@ -206,19 +300,48 @@ export default function Seat() {
             </div>
           </div>
           <div className="player-side">
-            <div className="seat-info">
-              <div className="exit-container">
-                <MdExitToApp
-                  onClick={() => navigate("/")}
-                  className="exit-button"
-                ></MdExitToApp>
+            <div className="seat-actions-section">
+              <div className="seat-info">
+                <div className="seat-info-header">
+                  <div className="seat-info-header-buttons">
+                    <MdExitToApp
+                      onClick={() => navigate("/")}
+                      className="exit-button header-button"
+                    ></MdExitToApp>
+                    <MdInfoOutline
+                      onClick={handleClickInfo}
+                      className="info-button header-button"
+                    ></MdInfoOutline>
+                  </div>
+                  <div className="nickname-container">
+                    {" "}
+                    <div>{seat.nickname}</div>
+                  </div>
+                </div>
+                <div className="action-buttons-container">
+                  {}
+                  {stack === 0 && stage === Stages.RoundEnd ? (
+                    <></>
+                  ) : (
+                    renderActionButton(stage)
+                  )}
+                </div>
               </div>
-              <h2>{seat.nickname}</h2>
-              <h2>{stack}</h2>
-              {stack === 0 ? <></> : renderActionButton(stage)}
+              {stage === Stages.PreBet ? (
+                <div className="clickable-chips">{clickableChipsView}</div>
+              ) : (
+                <></>
+              )}
+            </div>
+            <div className="stack-section">
+              <div className="stack-grid">{stackView}</div>
             </div>
           </div>
         </div>
+        <InfoDialog
+          open={infoDialogOpen}
+          handleClose={handleCloseInfo}
+        ></InfoDialog>
       </ThemeProvider>
     </>
   );
@@ -226,22 +349,21 @@ export default function Seat() {
 
 function PlaceBetButton(args: {
   handlePlaceBet: React.FormEventHandler<HTMLFormElement>;
-  stack: number;
+  bet: number;
 }) {
   return (
     <>
       <form method="post" onSubmit={args.handlePlaceBet}>
-        <TextField
-          className="action-button"
-          name="bet"
-          type="number"
-          defaultValue={0}
-          color={"primary"}
-          inputProps={{ min: 0, max: args.stack }}
-        ></TextField>
-        <button type="submit" className="action-button">
-          PLACE BET
-        </button>
+        <div className="bet-form-container">
+          <button
+            type="submit"
+            className="action-button"
+            disabled={args.bet === 0}
+            style={args.bet === 0 ? { cursor: "default" } : {}}
+          >
+            PLACE BET
+          </button>
+        </div>
       </form>
     </>
   );

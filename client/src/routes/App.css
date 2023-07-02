@@ -1,8 +1,9 @@
-#root {
+.landing-page {
   text-align: center;
   width: 100%;
   height: 100vh;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
 }
@@ -55,4 +56,9 @@
   display: flex;
   flex-direction: column;
   gap: 1em;
+}
+
+#root {
+  width: 100%;
+  height: 100vh;
 }

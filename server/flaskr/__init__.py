@@ -18,8 +18,10 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    from .controller import seat
+    from .controller import seat, leaderboard
     app.register_blueprint(seat.bp, url_prefix="/seat")
+    app.register_blueprint(leaderboard.bp, url_prefix="/leaderboard")
+
 
     # a simple page that says hello
     @app.route('/hello')
