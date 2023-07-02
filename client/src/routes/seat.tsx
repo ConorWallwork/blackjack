@@ -223,7 +223,8 @@ export default function Seat() {
       setBet(0);
       setResult("LOSS");
     } else {
-      // draw, stack doesn't change
+      // draw
+      setStack(bet);
       setResult("DRAW");
     }
     setStage(Stages.RoundEnd);
