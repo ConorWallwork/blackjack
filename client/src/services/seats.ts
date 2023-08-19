@@ -19,15 +19,34 @@ export async function startSeat(
   return { playerHand: player_hand, dealerHand: dealer_hand };
 }
 
-export async function hitSeat(id: string): Promise<number> {
-  const url = `${serverBaseUrl}/seat/${id}/hit`;
+export async function hitSeat(
+  id: string,
+  hand: 0 | 1 | undefined
+): Promise<number> {
+  const url = `${serverBaseUrl}/seat/${id}/hit${
+    hand === undefined ? "" : `?hand=${hand}`
+  }`;
   const response = await fetch(url, { method: "POST" });
   const { card } = await response.json();
   return card;
 }
 
-export async function sitSeat(id: string): Promise<void> {
-  const url = `${serverBaseUrl}/seat/${id}/sit`;
+export async function splitSeat(
+  id: string
+): Promise<{ leftCard: number; rightCard: number }> {
+  const url = `${serverBaseUrl}/seat/${id}/split`;
+  const response = await fetch(url, { method: "POST" });
+  const { left_card, right_card } = await response.json();
+  return { leftCard: left_card, rightCard: right_card };
+}
+
+export async function sitSeat(
+  id: string,
+  hand: 0 | 1 | undefined
+): Promise<void> {
+  const url = `${serverBaseUrl}/seat/${id}/sit${
+    hand === undefined ? "" : `?hand=${hand}`
+  }`;
   await fetch(url, { method: "POST" });
   return; // sit has no return type
 }

@@ -1,4 +1,15 @@
 .chip {
   height: 50px;
   width: 50px;
+  border: dashed;
+  border-radius: 50%;
+  border-width: 5px;
+  border-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.chip-value-text {
+  color: white;
 }

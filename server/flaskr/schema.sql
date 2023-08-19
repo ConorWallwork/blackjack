@@ -15,5 +15,10 @@ CREATE TABLE round (
     deck JSON NOT NULL,
     stage TEXT NOT NULL,
     bet INTEGER NOT NULL,
+    has_split BOOLEAN NOT NULL,
+    has_doubled_down BOOLEAN NOT NULL,
+    hand_sits JSON NOT NULL,
+    hand_busts JSON NOT NULL,
+
     FOREIGN KEY (seat_id) REFERENCES seat (id)
 )

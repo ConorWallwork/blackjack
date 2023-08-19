@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { useLoaderData, useNavigate } from "react-router-dom";
-import { endSeat, hitSeat, sitSeat, startSeat } from "../services/seats";
+import {
+  endSeat,
+  hitSeat,
+  sitSeat,
+  splitSeat,
+  startSeat,
+} from "../services/seats";
 import { getSuit, getValue, total } from "../functions/total";
 import "./seat.css";
 import Card from "../components/card";
@@ -28,10 +34,14 @@ export type ISeat = {
 };
 
 export type IRound = {
-  playerHand?: number[];
+  playerHand?: number[] | [number[], number[]];
   dealerHand?: number[];
   stage: Stages;
   bet: number | null;
+  hasSplit: boolean;
+  hasDoubledDown: boolean;
+  handSits: [boolean, boolean];
+  handBusts: [boolean, boolean];
 };
 
 export type ChipValue = 5 | 10 | 50 | 100 | 500 | 1000 | 5000 | 10000;
@@ -41,7 +51,7 @@ export const ChipColorMap: Record<ChipValue, string> = {
   10: "orange",
   50: "blue",
   100: "green",
-  500: "yellow",
+  500: "black",
   1000: "purple",
   5000: "gold",
   10000: "cyan",
@@ -55,9 +65,23 @@ export default function Seat() {
    */
   const { seat } = useLoaderData() as { seat: ISeat };
   const [stack, setStack] = useState<number>(seat.stack);
-  const [playerHand, setPlayerHand] = useState<number[]>(
-    seat.round?.playerHand ?? []
-  );
+
+  const [playerHandData, setPlayerHandData] = useState<{
+    playerHand: number[] | [number[], number[]];
+    hasSplit: boolean;
+    hasDoubledDown: boolean;
+    handSits: [boolean, boolean];
+    handBusts: [boolean, boolean];
+    activeHand: 0 | 1;
+  }>({
+    playerHand: seat.round?.playerHand ?? [],
+    hasSplit: !!seat.round?.hasSplit,
+    hasDoubledDown: !!seat.round?.hasDoubledDown,
+    handSits: seat.round?.handSits ?? [false, false],
+    handBusts: seat.round?.handBusts ?? [false, false],
+    activeHand: 0,
+  });
+
   const [dealerHand, setDealerHand] = useState<number[]>(
     seat.round?.dealerHand ?? []
   );
@@ -80,7 +104,11 @@ export default function Seat() {
     setStack(stack - chipValue);
   };
 
-  const playerHandView = playerHand.map((card, index) => {
+  const leftPlayerHandView = (
+    !playerHandData.hasSplit
+      ? (playerHandData.playerHand as number[])
+      : (playerHandData.playerHand as [number[], number[]])[0]
+  ).map((card, index) => {
     const cardValue = getValue(card);
     const cardSuit = getSuit(card);
     return (
@@ -92,6 +120,25 @@ export default function Seat() {
       </div>
     );
   });
+
+  const rightPlayerHandView = playerHandData.hasSplit ? (
+    (playerHandData.playerHand as [number[], number[]])[1].map(
+      (card, index) => {
+        const cardValue = getValue(card);
+        const cardSuit = getSuit(card);
+        return (
+          <div
+            className="card-wrapper"
+            style={{ position: "absolute", left: `${0 + index * 30}px` }}
+          >
+            <Card value={cardValue} suit={cardSuit}></Card>
+          </div>
+        );
+      }
+    )
+  ) : (
+    <></>
+  );
 
   const dealerHandView = dealerHand.map((card, index) => {
     const cardValue = getValue(card);
@@ -180,7 +227,10 @@ export default function Seat() {
     e.preventDefault();
     setStage(Stages.PreDeal);
     const startingHands = await startSeat(bet, seat.id);
-    setPlayerHand(startingHands.playerHand);
+    setPlayerHandData({
+      ...playerHandData,
+      playerHand: startingHands.playerHand,
+    });
     setDealerHand(startingHands.dealerHand);
   }
 
@@ -192,19 +242,94 @@ export default function Seat() {
 
   async function handleHit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const card = await hitSeat(seat.id);
-    const newPlayerHand = [...playerHand, card];
-    setPlayerHand(newPlayerHand);
-    if (total(newPlayerHand) > 21) {
-      setStage(Stages.RoundEnd);
-      setBet(0);
+    const card = await hitSeat(
+      seat.id,
+      playerHandData.hasSplit ? playerHandData.activeHand : undefined
+    );
+    const newPlayerHandData = {
+      ...playerHandData,
+      handSits: [...playerHandData.handSits] as [boolean, boolean],
+      handBusts: [...playerHandData.handBusts] as [boolean, boolean],
+    };
+    if (newPlayerHandData.hasSplit) {
+      newPlayerHandData.playerHand = [
+        [...(playerHandData.playerHand as [number[], number[]])[0]],
+        [...(playerHandData.playerHand as [number[], number[]])[1]],
+      ];
+      newPlayerHandData.playerHand[newPlayerHandData.activeHand] = [
+        ...newPlayerHandData.playerHand[newPlayerHandData.activeHand],
+        card,
+      ];
+      if (
+        total(newPlayerHandData.playerHand[newPlayerHandData.activeHand]) > 21
+      ) {
+        newPlayerHandData.handBusts[newPlayerHandData.activeHand] = true;
+        setBet(bet / 2);
+        newPlayerHandData.activeHand++;
+      }
+    } else {
+      newPlayerHandData.playerHand = [
+        ...(newPlayerHandData.playerHand as number[]),
+        card,
+      ];
     }
+    setPlayerHandData(newPlayerHandData);
+    if (!newPlayerHandData.hasSplit) {
+      if (total(newPlayerHandData.playerHand as number[]) > 21) {
+        setStage(Stages.RoundEnd);
+        setBet(0);
+      }
+    } else {
+      if (newPlayerHandData.handBusts[0] && newPlayerHandData.handBusts[1]) {
+        setStage(Stages.RoundEnd);
+      } else if (
+        (newPlayerHandData.handBusts[0] || newPlayerHandData.handSits[0]) &&
+        (newPlayerHandData.handBusts[1] || newPlayerHandData.handSits[1])
+      ) {
+        setStage(Stages.DealerTurn);
+      }
+    }
+  }
+
+  async function handleSplit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const { leftCard, rightCard } = await splitSeat(seat.id);
+    const newPlayerHand = {
+      ...playerHandData,
+      hasSplit: true,
+      playerHand: [
+        [(playerHandData.playerHand as number[])[0], leftCard],
+        [(playerHandData.playerHand as number[])[1], rightCard],
+      ] as [number[], number[]],
+    };
+    setPlayerHandData(newPlayerHand);
+    setBet(bet * 2);
+    setStack(stack - bet);
   }
 
   async function handleSit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    await sitSeat(seat.id);
-    setStage(Stages.DealerTurn);
+    await sitSeat(
+      seat.id,
+      playerHandData.hasSplit ? playerHandData.activeHand : undefined
+    );
+    if (playerHandData.hasSplit) {
+      const newPlayerHand = {
+        ...playerHandData,
+        handSits: [...playerHandData.handSits] as [boolean, boolean],
+      };
+      newPlayerHand.handSits[playerHandData.activeHand] = true;
+      newPlayerHand.activeHand++;
+      setPlayerHandData(newPlayerHand);
+      if (
+        (newPlayerHand.handBusts[0] || newPlayerHand.handSits[0]) &&
+        (newPlayerHand.handBusts[1] || newPlayerHand.handSits[1])
+      ) {
+        setStage(Stages.DealerTurn);
+      }
+    } else {
+      setStage(Stages.DealerTurn);
+    }
   }
 
   async function handleEnd(e: React.FormEvent<HTMLFormElement>) {
@@ -212,28 +337,54 @@ export default function Seat() {
     const dealerCards = await endSeat(seat.id);
     const newDealerHand = [...dealerHand, ...dealerCards];
     setDealerHand(newDealerHand);
-    const playerTotal = total(playerHand);
-    const dealerTotal = total(newDealerHand);
+    if (!playerHandData.hasSplit) {
+      const playerTotal = total(playerHandData.playerHand as number[]);
+      const dealerTotal = total(newDealerHand);
 
-    if (dealerTotal > 21 || playerTotal > dealerTotal) {
-      setStack(stack + 2 * bet);
-      setBet(0);
-      setResult("WIN");
-    } else if (dealerTotal > playerTotal) {
-      setBet(0);
-      setResult("LOSS");
+      if (dealerTotal > 21 || playerTotal > dealerTotal) {
+        setStack(stack + bet * 2);
+        setBet(0);
+        setResult("WIN");
+      } else if (dealerTotal > playerTotal) {
+        setBet(0);
+        setResult("LOSS");
+      } else {
+        // draw
+        setStack(stack + bet);
+        setBet(0);
+        setResult("DRAW");
+      }
     } else {
-      // draw
-      setStack(bet);
+      const handPayouts = [0, 0];
+      for (let i = 0; i < 2; i++) {
+        if (playerHandData.handBusts[i]) continue;
+        const handTotal = total(playerHandData.playerHand[i] as number[]);
+        const dealerTotal = total(newDealerHand);
+        if (dealerTotal > 21 || handTotal > dealerTotal) {
+          handPayouts[i] = bet;
+        } else if (dealerTotal > handTotal) {
+          handPayouts[i] = 0;
+        } else {
+          // draw
+          handPayouts[i] = bet / 2;
+        }
+      }
       setBet(0);
-      setResult("DRAW");
+      setStack(stack + handPayouts[0] + handPayouts[1]);
     }
     setStage(Stages.RoundEnd);
   }
 
   async function handleNew(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setPlayerHand([]);
+    setPlayerHandData({
+      playerHand: [],
+      hasSplit: false,
+      hasDoubledDown: false,
+      handSits: [false, false],
+      handBusts: [false, false],
+      activeHand: 0,
+    });
     setDealerHand([]);
     setBet(0);
     setResult(null);
@@ -256,6 +407,14 @@ export default function Seat() {
           <PlayerTurnButtons
             handleHit={handleHit}
             handleSit={handleSit}
+            handleSplit={handleSplit}
+            canSplit={
+              !playerHandData.hasSplit &&
+              playerHandData.playerHand.length === 2 &&
+              total([playerHandData.playerHand[0] as number]) ===
+                total([playerHandData.playerHand[1] as number]) &&
+              stack >= bet
+            }
           ></PlayerTurnButtons>
         );
       case Stages.DealerTurn:
@@ -293,11 +452,18 @@ export default function Seat() {
             <div className="bet-outer">
               <div className="stack-grid">{betView}</div>
             </div>
-            <div className="player-cards-outer">
+            <div className="player-cards-outer player-cards-left">
               <div className="player-cards-inner">
                 {[Stages.PreBet, Stages.PreDeal].includes(stage)
                   ? ""
-                  : playerHandView}
+                  : leftPlayerHandView}
+              </div>
+            </div>
+            <div className="player-cards-outer player-cards-right">
+              <div className="player-cards-inner">
+                {[Stages.PreBet, Stages.PreDeal].includes(stage)
+                  ? ""
+                  : rightPlayerHandView}
               </div>
             </div>
           </div>
@@ -388,20 +554,35 @@ function DealButton(args: {
 function PlayerTurnButtons(args: {
   handleHit: React.FormEventHandler<HTMLFormElement>;
   handleSit: React.FormEventHandler<HTMLFormElement>;
+  handleSplit: React.FormEventHandler<HTMLFormElement>;
+  canSplit: boolean;
 }) {
   return (
     <>
       <div className="player-turn-buttons-container">
-        <form method="post" onSubmit={args.handleHit}>
-          <button type="submit" className="action-button">
-            HIT
-          </button>
-        </form>
-        <form method="post" onSubmit={args.handleSit}>
-          <button type="submit" className="action-button">
-            SIT
-          </button>
-        </form>
+        <div className="player-turn-buttons-sub-container">
+          <form method="post" onSubmit={args.handleHit}>
+            <button type="submit" className="action-button">
+              HIT
+            </button>
+          </form>
+          <form method="post" onSubmit={args.handleSit}>
+            <button type="submit" className="action-button">
+              SIT
+            </button>
+          </form>
+        </div>
+        <div className="player-turn-buttons-sub-container">
+          <form method="post" onSubmit={args.handleSplit}>
+            <button
+              type="submit"
+              className="action-button"
+              disabled={!args.canSplit}
+            >
+              SPLIT
+            </button>
+          </form>
+        </div>
       </div>
     </>
   );

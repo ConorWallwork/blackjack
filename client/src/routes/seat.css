@@ -23,7 +23,7 @@
 
 .dealer-felt {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   grid-template-rows: 1fr;
   grid-column: 1 / 5;
   grid-row: 2;
@@ -32,7 +32,7 @@
 
 .player-felt {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr 2fr 2fr;
   grid-template-rows: 1fr;
   grid-column: 1 / 5;
   grid-row: 3;
@@ -41,11 +41,19 @@
 
 .bet-outer {
   grid-column: 1;
+  padding: 1em;
 }
 
 .player-cards-outer {
-  grid-column: 2;
   position: relative;
+}
+
+.player-cards-left {
+  grid-column: 2;
+}
+
+.player-cards-right {
+  grid-column: 3;
 }
 
 .player-cards-inner {
@@ -75,7 +83,7 @@
 }
 
 .seat-info {
-  width: 180px;
+  width: 300px;
   background-color: blue;
   color: white;
   border: solid;
@@ -131,6 +139,13 @@
 .player-turn-buttons-container {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  gap: 1em;
+}
+
+.player-turn-buttons-sub-container {
+  display: flex;
+  flex-direction: row;
   justify-content: center;
   gap: 1em;
 }

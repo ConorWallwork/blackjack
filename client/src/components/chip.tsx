@@ -1,4 +1,5 @@
 import { ChipColorMap, ChipValue } from "../routes/seat";
+import "./chip.css";
 
 function Chip(args: {
   value: ChipValue;
@@ -9,16 +10,13 @@ function Chip(args: {
     <div
       className="chip"
       style={{
-        border: "dashed",
-        borderRadius: "50%",
-        borderColor: "white",
         backgroundColor: ChipColorMap[args.value],
-        height: "50px",
-        width: "50px",
         cursor: args.clickable ? "pointer" : "default",
       }}
       onClick={args.onClick}
-    ></div>
+    >
+      <span className="chip-value-text">{args.value}</span>
+    </div>
   );
 }
 
