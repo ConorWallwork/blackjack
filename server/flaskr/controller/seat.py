@@ -52,6 +52,9 @@ def get(id):
             "dealer_hand": active_round.dealer_hand,
             "stage": active_round.stage,
             "bet": active_round.bet,
+            "has_split": active_round.has_split,
+            "hand_sits": active_round.hand_sits,
+            "hand_busts": active_round.hand_busts,
         },
     }
 

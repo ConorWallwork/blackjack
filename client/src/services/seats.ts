@@ -1,6 +1,6 @@
 import { redirect } from "react-router-dom";
 import { serverBaseUrl } from "../environments/environment";
-import { ISeat } from "../routes/seat";
+import { Seat } from "../routes/seat";
 
 export async function createSeat(nickname: string): Promise<string> {
   const url = `${serverBaseUrl}/seat/new?nickname=${nickname}`;
@@ -51,7 +51,7 @@ export async function sitSeat(
   return; // sit has no return type
 }
 
-export async function getSeat(id: string): Promise<ISeat> {
+export async function getSeat(id: string): Promise<Seat> {
   const url = `${serverBaseUrl}/seat/${id}`;
   const response = await fetch(url, { method: "GET" });
   const seatDTO = await response.json();
@@ -62,6 +62,9 @@ export async function getSeat(id: string): Promise<ISeat> {
       ...seatDTO.round,
       playerHand: seatDTO.round?.player_hand,
       dealerHand: seatDTO.round?.dealer_hand,
+      handBusts: seatDTO.round?.hand_busts,
+      handSits: seatDTO.round?.hand_sits,
+      hasSplit: seatDTO.round?.has_split,
     },
   };
 }

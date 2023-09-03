@@ -1,8 +1,20 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.footer {
+  background-color: black;
+  height: 2em;
+  color: white;
+}
+
 .table {
   display: grid;
   grid-template-rows: repeat(4, 1fr);
   grid-template-columns: repeat(4, 1fr);
-  height: 100%;
+  height: calc(100% - 2em);
   width: 100%;
 }
 
@@ -193,8 +205,4 @@
   display: grid;
   grid-template-columns: repeat(3, 70px);
   grid-template-rows: repeat(3, 70px);
-}
-
-.chip-stack-wrapper {
-  position: relative;
 }

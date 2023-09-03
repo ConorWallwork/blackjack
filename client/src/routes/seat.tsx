@@ -7,9 +7,8 @@ import {
   splitSeat,
   startSeat,
 } from "../services/seats";
-import { getSuit, getValue, total } from "../functions/total";
+import { total } from "../functions/total";
 import "./seat.css";
-import Card from "../components/card";
 import { MdExitToApp } from "@react-icons/all-files/md/MdExitToApp";
 import { MdInfoOutline } from "@react-icons/all-files/md/MdInfoOutline";
 import Deck from "../components/deck";
@@ -17,6 +16,8 @@ import { ThemeProvider, createTheme } from "@mui/material";
 import { chips } from "../functions/chips";
 import Chip from "../components/chip";
 import InfoDialog from "../components/info-dialog";
+import Hand from "../components/hand";
+import Stack from "../components/stack";
 
 export enum Stages {
   PreBet = "pre_bet",
@@ -26,14 +27,14 @@ export enum Stages {
   RoundEnd = "round_end",
 }
 
-export type ISeat = {
+export type Seat = {
   nickname: string;
   stack: number;
   id: string;
-  round?: IRound;
+  round?: Round;
 };
 
-export type IRound = {
+export type Round = {
   playerHand?: number[] | [number[], number[]];
   dealerHand?: number[];
   stage: Stages;
@@ -43,6 +44,7 @@ export type IRound = {
   handSits: [boolean, boolean];
   handBusts: [boolean, boolean];
 };
+export type Result = "WIN" | "LOSS" | "DRAW" | "UNFINISHED";
 
 export type ChipValue = 5 | 10 | 50 | 100 | 500 | 1000 | 5000 | 10000;
 
@@ -63,7 +65,7 @@ export default function Seat() {
   /** Get the value of seat on page load and initialise the state
    * with those values
    */
-  const { seat } = useLoaderData() as { seat: ISeat };
+  const { seat } = useLoaderData() as { seat: Seat };
   const [stack, setStack] = useState<number>(seat.stack);
 
   const [playerHandData, setPlayerHandData] = useState<{
@@ -72,6 +74,7 @@ export default function Seat() {
     hasDoubledDown: boolean;
     handSits: [boolean, boolean];
     handBusts: [boolean, boolean];
+    handResults: [Result, Result];
     activeHand: 0 | 1;
   }>({
     playerHand: seat.round?.playerHand ?? [],
@@ -79,6 +82,7 @@ export default function Seat() {
     hasDoubledDown: !!seat.round?.hasDoubledDown,
     handSits: seat.round?.handSits ?? [false, false],
     handBusts: seat.round?.handBusts ?? [false, false],
+    handResults: ["UNFINISHED", "UNFINISHED"],
     activeHand: 0,
   });
 
@@ -87,8 +91,7 @@ export default function Seat() {
   );
   const [stage, setStage] = useState(seat.round?.stage ?? Stages.PreBet);
   const [bet, setBet] = useState<number>(seat.round?.bet ?? 0);
-  const [_result, setResult] = useState<string | null>(null);
-  _result;
+  const [result, setResult] = useState<Result>("UNFINISHED");
   const [infoDialogOpen, setInfoDialogOpen] = useState(false);
 
   const handleClickInfo = () => {
@@ -99,109 +102,40 @@ export default function Seat() {
     setInfoDialogOpen(false);
   };
 
-  const handleClickChip = (chipValue: ChipValue) => {
-    setBet(bet + chipValue);
-    setStack(stack - chipValue);
-  };
-
-  const leftPlayerHandView = (
-    !playerHandData.hasSplit
+  const leftPlayerHandView = Hand({
+    cards: !playerHandData.hasSplit
       ? (playerHandData.playerHand as number[])
-      : (playerHandData.playerHand as [number[], number[]])[0]
-  ).map((card, index) => {
-    const cardValue = getValue(card);
-    const cardSuit = getSuit(card);
-    return (
-      <div
-        className="card-wrapper"
-        style={{ position: "absolute", left: `${0 + index * 30}px` }}
-      >
-        <Card value={cardValue} suit={cardSuit}></Card>
-      </div>
-    );
+      : (playerHandData.playerHand as [number[], number[]])[0],
   });
 
   const rightPlayerHandView = playerHandData.hasSplit ? (
-    (playerHandData.playerHand as [number[], number[]])[1].map(
-      (card, index) => {
-        const cardValue = getValue(card);
-        const cardSuit = getSuit(card);
-        return (
-          <div
-            className="card-wrapper"
-            style={{ position: "absolute", left: `${0 + index * 30}px` }}
-          >
-            <Card value={cardValue} suit={cardSuit}></Card>
-          </div>
-        );
-      }
-    )
+    Hand({ cards: (playerHandData.playerHand as [number[], number[]])[1] })
   ) : (
     <></>
   );
+  const dealerHandView = Hand({ cards: dealerHand });
 
-  const dealerHandView = dealerHand.map((card, index) => {
-    const cardValue = getValue(card);
-    const cardSuit = getSuit(card);
-    return (
-      <div
-        className="card-wrapper"
-        style={{
-          position: "absolute",
-          left: `${0 + index * 30}px`,
-          bottom: "0px",
-        }}
-      >
-        <Card value={cardValue} suit={cardSuit}></Card>
-      </div>
-    );
-  });
-
-  const stackChipCounts = chips(stack);
-
-  const stackView = Object.keys(stackChipCounts).map((chipValue) => {
-    const chipList = [];
-    const numChips = stackChipCounts[
-      parseInt(chipValue) as ChipValue
-    ] as number;
-    for (let index = 0; index < numChips; index++) {
-      chipList.push(
-        <div
-          className="chip-wrapper"
-          style={{
-            position: "absolute",
-            left: `${0 + index * 2}px`,
-            top: "0px",
-          }}
-        >
-          <Chip value={parseInt(chipValue) as ChipValue}></Chip>
-        </div>
-      );
+  // Value of bet is always initial value. Calculate the current/visible value
+  let visibleBet = bet;
+  if (playerHandData.hasSplit) {
+    visibleBet *= 2;
+    for (let i = 0; i++; i < 2) {
+      // Any result other than unfinished means that cash is out of the visible bet stack
+      visibleBet += playerHandData.handResults[i] === "UNFINISHED" ? 0 : -bet;
     }
-    return <div className="chip-stack-wrapper">{chipList}</div>;
-  });
+  } else {
+    visibleBet = result === "UNFINISHED" ? bet : 0;
+  }
+  const betChipCounts = chips(visibleBet);
+  const betView = Stack({ chipCounts: betChipCounts });
 
-  const betChipCounts = chips(bet);
+  const visibleStack = stack - visibleBet;
+  const mainStackChipCounts = chips(visibleStack);
+  const mainStackView = Stack({ chipCounts: mainStackChipCounts });
 
-  const betView = Object.keys(betChipCounts).map((chipValue) => {
-    const chipList = [];
-    const numChips = betChipCounts[parseInt(chipValue) as ChipValue] as number;
-    for (let index = 0; index < numChips; index++) {
-      chipList.push(
-        <div
-          className="chip-wrapper"
-          style={{
-            position: "absolute",
-            left: `${0 + index * 2}px`,
-            top: "0px",
-          }}
-        >
-          <Chip value={parseInt(chipValue) as ChipValue}></Chip>
-        </div>
-      );
-    }
-    return <div className="chip-stack-wrapper">{chipList}</div>;
-  });
+  const handleClickChip = (chipValue: ChipValue) => {
+    setBet(bet + chipValue);
+  };
 
   const clickableChipsView = Object.keys(ChipColorMap).map((chipValue) => {
     const intValue = parseInt(chipValue);
@@ -264,7 +198,9 @@ export default function Seat() {
         total(newPlayerHandData.playerHand[newPlayerHandData.activeHand]) > 21
       ) {
         newPlayerHandData.handBusts[newPlayerHandData.activeHand] = true;
-        setBet(bet / 2);
+        setStack(stack - bet);
+        newPlayerHandData.handResults = [...playerHandData.handResults];
+        newPlayerHandData.handResults[newPlayerHandData.activeHand] = "LOSS";
         newPlayerHandData.activeHand++;
       }
     } else {
@@ -273,11 +209,11 @@ export default function Seat() {
         card,
       ];
     }
-    setPlayerHandData(newPlayerHandData);
     if (!newPlayerHandData.hasSplit) {
       if (total(newPlayerHandData.playerHand as number[]) > 21) {
         setStage(Stages.RoundEnd);
-        setBet(0);
+        setResult("LOSS");
+        setStack(stack - bet);
       }
     } else {
       if (newPlayerHandData.handBusts[0] && newPlayerHandData.handBusts[1]) {
@@ -289,6 +225,7 @@ export default function Seat() {
         setStage(Stages.DealerTurn);
       }
     }
+    setPlayerHandData(newPlayerHandData);
   }
 
   async function handleSplit(e: React.FormEvent<HTMLFormElement>) {
@@ -303,8 +240,6 @@ export default function Seat() {
       ] as [number[], number[]],
     };
     setPlayerHandData(newPlayerHand);
-    setBet(bet * 2);
-    setStack(stack - bet);
   }
 
   async function handleSit(e: React.FormEvent<HTMLFormElement>) {
@@ -342,35 +277,42 @@ export default function Seat() {
       const dealerTotal = total(newDealerHand);
 
       if (dealerTotal > 21 || playerTotal > dealerTotal) {
-        setStack(stack + bet * 2);
-        setBet(0);
+        setStack(stack + bet);
         setResult("WIN");
       } else if (dealerTotal > playerTotal) {
-        setBet(0);
+        setStack(stack - bet);
         setResult("LOSS");
       } else {
         // draw
-        setStack(stack + bet);
-        setBet(0);
         setResult("DRAW");
       }
     } else {
       const handPayouts = [0, 0];
+      const handResults: [Result, Result] = ["UNFINISHED", "UNFINISHED"];
       for (let i = 0; i < 2; i++) {
-        if (playerHandData.handBusts[i]) continue;
+        if (playerHandData.handBusts[i]) {
+          handResults[i] = "LOSS";
+          continue;
+        }
         const handTotal = total(playerHandData.playerHand[i] as number[]);
         const dealerTotal = total(newDealerHand);
         if (dealerTotal > 21 || handTotal > dealerTotal) {
           handPayouts[i] = bet;
+          handResults[i] = "WIN";
         } else if (dealerTotal > handTotal) {
-          handPayouts[i] = 0;
+          handPayouts[i] = -bet;
+          handResults[i] = "LOSS";
         } else {
           // draw
-          handPayouts[i] = bet / 2;
+          handPayouts[i] = 0;
+          handResults[i] = "DRAW";
         }
       }
-      setBet(0);
       setStack(stack + handPayouts[0] + handPayouts[1]);
+      setPlayerHandData({
+        ...playerHandData,
+        handResults,
+      });
     }
     setStage(Stages.RoundEnd);
   }
@@ -383,11 +325,12 @@ export default function Seat() {
       hasDoubledDown: false,
       handSits: [false, false],
       handBusts: [false, false],
+      handResults: ["UNFINISHED", "UNFINISHED"],
       activeHand: 0,
     });
     setDealerHand([]);
     setBet(0);
-    setResult(null);
+    setResult("UNFINISHED");
     setStage(Stages.PreBet);
   }
 
@@ -413,7 +356,7 @@ export default function Seat() {
               playerHandData.playerHand.length === 2 &&
               total([playerHandData.playerHand[0] as number]) ===
                 total([playerHandData.playerHand[1] as number]) &&
-              stack >= bet
+              stack >= 2 * bet
             }
           ></PlayerTurnButtons>
         );
@@ -435,77 +378,83 @@ export default function Seat() {
   return (
     <>
       <ThemeProvider theme={theme}>
-        <div className="table">
-          <div className="dealer-side">
-            <div className="deck-container">
-              <Deck></Deck>
+        <div className="body">
+          <div className="table">
+            <div className="dealer-side">
+              <div className="deck-container">
+                <Deck></Deck>
+              </div>
             </div>
-          </div>
-          <div className="dealer-felt">
-            <div className="dealer-cards">
-              {[Stages.PreBet, Stages.PreDeal].includes(stage)
-                ? ""
-                : dealerHandView}
-            </div>
-          </div>
-          <div className="player-felt">
-            <div className="bet-outer">
-              <div className="stack-grid">{betView}</div>
-            </div>
-            <div className="player-cards-outer player-cards-left">
-              <div className="player-cards-inner">
+            <div className="dealer-felt">
+              <div className="dealer-cards">
                 {[Stages.PreBet, Stages.PreDeal].includes(stage)
                   ? ""
-                  : leftPlayerHandView}
+                  : dealerHandView}
               </div>
             </div>
-            <div className="player-cards-outer player-cards-right">
-              <div className="player-cards-inner">
-                {[Stages.PreBet, Stages.PreDeal].includes(stage)
-                  ? ""
-                  : rightPlayerHandView}
+            <div className="player-felt">
+              <div className="bet-outer">
+                <div className="stack-grid">{betView}</div>
+              </div>
+              <div className="player-cards-outer player-cards-left">
+                <div className="player-cards-inner">
+                  {[Stages.PreBet, Stages.PreDeal].includes(stage)
+                    ? ""
+                    : leftPlayerHandView}
+                </div>
+              </div>
+              <div className="player-cards-outer player-cards-right">
+                <div className="player-cards-inner">
+                  {[Stages.PreBet, Stages.PreDeal].includes(stage)
+                    ? ""
+                    : rightPlayerHandView}
+                </div>
+              </div>
+            </div>
+            <div className="player-side">
+              <div className="seat-actions-section">
+                <div className="seat-info">
+                  <div className="seat-info-header">
+                    <div className="seat-info-header-buttons">
+                      <MdExitToApp
+                        onClick={() => navigate("/")}
+                        className="exit-button header-button"
+                      ></MdExitToApp>
+                      <MdInfoOutline
+                        onClick={handleClickInfo}
+                        className="info-button header-button"
+                      ></MdInfoOutline>
+                    </div>
+                    <div className="nickname-container">
+                      {" "}
+                      <div>{seat.nickname}</div>
+                    </div>
+                  </div>
+                  <div className="action-buttons-container">
+                    {}
+                    {stack === 0 && stage === Stages.RoundEnd ? (
+                      <></>
+                    ) : (
+                      renderActionButton(stage)
+                    )}
+                  </div>
+                </div>
+                {stage === Stages.PreBet ? (
+                  <div className="clickable-chips">{clickableChipsView}</div>
+                ) : (
+                  <></>
+                )}
+              </div>
+              <div className="stack-section">
+                <div className="stack-grid">{mainStackView}</div>
               </div>
             </div>
           </div>
-          <div className="player-side">
-            <div className="seat-actions-section">
-              <div className="seat-info">
-                <div className="seat-info-header">
-                  <div className="seat-info-header-buttons">
-                    <MdExitToApp
-                      onClick={() => navigate("/")}
-                      className="exit-button header-button"
-                    ></MdExitToApp>
-                    <MdInfoOutline
-                      onClick={handleClickInfo}
-                      className="info-button header-button"
-                    ></MdInfoOutline>
-                  </div>
-                  <div className="nickname-container">
-                    {" "}
-                    <div>{seat.nickname}</div>
-                  </div>
-                </div>
-                <div className="action-buttons-container">
-                  {}
-                  {stack === 0 && stage === Stages.RoundEnd ? (
-                    <></>
-                  ) : (
-                    renderActionButton(stage)
-                  )}
-                </div>
-              </div>
-              {stage === Stages.PreBet ? (
-                <div className="clickable-chips">{clickableChipsView}</div>
-              ) : (
-                <></>
-              )}
-            </div>
-            <div className="stack-section">
-              <div className="stack-grid">{stackView}</div>
-            </div>
+          <div className="footer">
+            STACK: {visibleStack} &emsp; BET: {visibleBet}
           </div>
         </div>
+
         <InfoDialog
           open={infoDialogOpen}
           handleClose={handleCloseInfo}
