@@ -3,7 +3,11 @@ import { ChipValue } from "../routes/seat";
 import Chip from "./chip";
 import "./stack.css";
 
-function Stack(args: { chipCounts: ChipCounts }) {
+function Stack(args: {
+  chipCounts: ChipCounts;
+  clickable: boolean;
+  onClick?: (value: ChipValue) => void;
+}) {
   return Object.keys(args.chipCounts).map((chipValue) => {
     const chipList = [];
     const numChips = args.chipCounts[
@@ -19,7 +23,15 @@ function Stack(args: { chipCounts: ChipCounts }) {
             top: "0px",
           }}
         >
-          <Chip value={parseInt(chipValue) as ChipValue}></Chip>
+          <Chip
+            value={parseInt(chipValue) as ChipValue}
+            clickable={args.clickable}
+            onClick={() =>
+              args.onClick
+                ? args.onClick(parseInt(chipValue) as ChipValue)
+                : undefined
+            }
+          ></Chip>
         </div>
       );
     }

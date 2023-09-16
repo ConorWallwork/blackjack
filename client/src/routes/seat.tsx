@@ -127,11 +127,21 @@ export default function Seat() {
     visibleBet = result === "UNFINISHED" ? bet : 0;
   }
   const betChipCounts = chips(visibleBet);
-  const betView = Stack({ chipCounts: betChipCounts });
+  const betView = Stack({
+    chipCounts: betChipCounts,
+    clickable: stage === Stages.PreBet,
+    onClick:
+      stage === Stages.PreBet
+        ? (chipValue: ChipValue) => setBet(bet - chipValue)
+        : undefined,
+  });
 
   const visibleStack = stack - visibleBet;
   const mainStackChipCounts = chips(visibleStack);
-  const mainStackView = Stack({ chipCounts: mainStackChipCounts });
+  const mainStackView = Stack({
+    chipCounts: mainStackChipCounts,
+    clickable: false,
+  });
 
   const handleClickChip = (chipValue: ChipValue) => {
     setBet(bet + chipValue);
